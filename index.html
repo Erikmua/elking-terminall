@@ -3,443 +3,468 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Termux Elking Real</title>
+    <title>Termux Elking Emulator</title>
     
-    <meta name="theme-color" content="#000000">
+    <meta name="theme-color" content="#000">
     <meta name="mobile-web-app-capable" content="yes">
-    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIlRlcm11eCBFbGFraW5nIiwKICAic2hvcnRfbmFtZSI6ICJFbGtpbmdUZXJtIiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMwMDAwMDAiLAogICJ0aGVtZV9jb2xvciI6ICIjMDAwMDAwIiwKICAiaWNvbnMiOiBbIHsgInNyYyI6ICJodHRwczovL2Nkbi1pY29ucy1wbmcuZmxhdGljb24uY29tLzUxMi85MjAvOTIwNTMzLnBuZyIsICJzaXplcyI6ICI1MTJ4NTEyIiwgInR5cGUiOiAiaW1hZ2UvcG5nIiB9IF0KfQ==">
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIlRlcm11eCBFbGFraW5nIiwKICAic2hvcnRfbmFtZSI6ICJFbGtpbmdUZXJtIiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMwMDAwMDAiLAogICJ0aGVtZV9jb2xvciI6ICIjMDAwMDAwIiwKICAiaWNvbnMiOiBbIHsgInNyYyI6ICJodHRwczovL2Nkbi1pY29ucy1wbmcuZmxhdGljb24uY29tLzUxMi8yNTYvMjU2Njk0LnBuZyIsICJzaXplcyI6ICI1MTJ4NTEyIiwgInR5cGUiOiAiaW1hZ2UvcG5nIiB9IF0KfQ==">
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
 
         :root {
-            --bg-image: url('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?auto=format&fit=crop&w=1080&q=80');
-            --text-color: #e0e0e0;
-            --prompt-color: #00ff41; /* Verde Termux */
-            --dir-color: #00bfff; /* Cartelle blu */
+            /* STILE SPAZIO ELKING */
+            --bg-img: url('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?auto=format&fit=crop&w=1080');
+            --font-main: 'Fira Code', monospace;
             --font-size: 13px;
         }
 
         body {
             margin: 0;
-            background: #000 var(--bg-image) center/cover fixed no-repeat;
-            color: var(--text-color);
-            font-family: 'Fira Code', 'Courier New', monospace;
+            background: #000 var(--bg-img) center/cover fixed no-repeat;
+            color: #e0e0e0;
+            font-family: var(--font-main);
             height: 100vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
 
-        /* Overlay scuro per leggere meglio il testo sopra lo sfondo */
-        #terminal-overlay {
+        /* Il Terminale è un vetro scuro sopra lo sfondo */
+        #terminal {
             flex: 1;
-            background: rgba(10, 10, 15, 0.92); 
+            background: rgba(12, 12, 12, 0.93);
             padding: 8px;
             overflow-y: auto;
-            display: flex;
-            flex-direction: column;
             font-size: var(--font-size);
-            line-height: 1.3;
+            line-height: 1.4;
+            word-break: break-all;
         }
 
-        .output-line {
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            margin-bottom: 2px;
-        }
-
-        .prompt-line {
-            display: flex;
-            align-items: center;
-        }
-
-        .prompt-text {
-            color: var(--prompt-color);
-            font-weight: bold;
-            white-space: nowrap;
-            margin-right: 5px;
-        }
-
-        input {
-            background: transparent;
-            border: none;
-            color: white;
-            font-family: inherit;
-            font-size: inherit;
-            flex-grow: 1;
-            outline: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        /* Toolbar stile Termux */
-        #extra-keys {
-            background: #212121;
-            display: flex;
-            padding: 4px;
-            gap: 4px;
-            overflow-x: auto;
-            flex-shrink: 0;
-            border-top: 1px solid #333;
-        }
-
-        .key {
-            background: #424242;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 2px;
-            font-weight: bold;
-            min-width: 40px;
-            text-align: center;
-        }
-        .key:active { background: #616161; }
-
-        /* Helpers per colori testo */
-        .blue { color: #5ea1ff; font-weight: bold; }
-        .green { color: #00ff41; }
-        .red { color: #ff5555; }
+        .line { margin-bottom: 2px; display: block; }
+        .dir { color: #5ea1ff; font-weight: bold; } /* Blu cartelle */
+        .exec { color: #00ff41; font-weight: bold; } /* Verde eseguibili */
+        .sym { color: cyan; } 
+        .err { color: #ff5555; }
         
+        /* Prompt Input Area */
+        #input-area { display: flex; margin-top: 5px; }
+        #prompt { color: #00ff41; font-weight: bold; white-space: nowrap; margin-right: 5px; }
+        
+        input {
+            background: transparent; border: none; color: white;
+            font-family: inherit; font-size: inherit; flex-grow: 1; outline: none; margin: 0; padding: 0;
+        }
+
+        /* Extra Keys Toolbar */
+        #toolbar {
+            background: #1f1f1f;
+            display: flex; gap: 4px; padding: 6px;
+            overflow-x: auto; flex-shrink: 0; border-top: 1px solid #333;
+        }
+        .key {
+            background: #333; color: #fff; border: none; padding: 8px 12px;
+            border-radius: 3px; font-weight: bold; font-family: monospace;
+            min-width: 45px;
+        }
+        .key:active { background: #555; }
+
+        /* Helpers */
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
-    <div id="terminal-overlay" onclick="focusInput()">
+    <input type="file" id="bg-upload" class="hidden" accept="image/*">
+
+    <div id="terminal" onclick="document.getElementById('cmd').focus()">
         <div id="output">
-            <div class="output-line">Welcome to Termux!</div>
-            <div class="output-line">Wiki:     https://wiki.termux.com</div>
-            <div class="output-line">Community: https://termux.com/community</div>
-            <div class="output-line">Gitter:    https://gitter.im/termux/termux</div>
-            <div class="output-line">IRC:       #termux on freenode</div>
-            <br>
-            <div class="output-line">Working with packages:</div>
-            <div class="output-line"> * search packages:   pkg search &lt;query&gt;</div>
-            <div class="output-line"> * install a package: pkg install &lt;package&gt;</div>
-            <div class="output-line"> * upgrade packages:  pkg upgrade</div>
-            <br>
+            <div class="line">Welcome to Termux Elking Edition!</div>
+            <div class="line"><br></div>
+            <div class="line">Wiki:     https://wiki.termux.com</div>
+            <div class="line">Community: https://termux.com/community</div>
+            <div class="line"><br></div>
+            <div class="line">Working with packages:</div>
+            <div class="line"> * search packages:   pkg search &lt;query&gt;</div>
+            <div class="line"> * install a package: pkg install &lt;package&gt;</div>
+            <div class="line"> * upgrade packages:  pkg upgrade</div>
+            <div class="line"><br></div>
+            <div class="line">Subscribing to additional repositories:</div>
+            <div class="line"> * Root:     pkg install root-repo</div>
+            <div class="line"> * X11:      pkg install x11-repo</div>
+            <div class="line"><br></div>
+            <div class="line">Report issues at https://termux.com/issues</div>
+            <div class="line"><br></div>
         </div>
-        
-        <div class="prompt-line" id="input-line">
-            <span class="prompt-text" id="prompt-label">H4CK3R[~]:#</span>
-            <input type="text" id="cmd-input" autocomplete="off" spellcheck="false" autofocus>
+        <div id="input-area">
+            <div id="prompt">~ $</div>
+            <input type="text" id="cmd" autocomplete="off" spellcheck="false" autofocus>
         </div>
     </div>
 
-    <div id="extra-keys">
-        <button class="key" onclick="insert('ESC')">ESC</button>
-        <button class="key" onclick="insert('/')">/</button>
-        <button class="key" onclick="insert('-')">-</button>
-        <button class="key" onclick="insert('HOME')">HOME</button>
-        <button class="key" onclick="insert('UP')">⬆</button>
-        <button class="key" onclick="insert('END')">END</button>
-        <button class="key" style="color:#00ffff" onclick="zoom(1)">Z+</button>
-        <button class="key" style="color:#00ffff" onclick="zoom(-1)">Z-</button>
+    <div id="toolbar">
+        <button class="key" onclick="press('ESC')">ESC</button>
+        <button class="key" onclick="press('/')">/</button>
+        <button class="key" onclick="press('-')">-</button>
+        <button class="key" onclick="press('HOME')">HOME</button>
+        <button class="key" onclick="press('UP')">⬆</button>
+        <button class="key" onclick="press('END')">END</button>
+        <button class="key" style="color:cyan" onclick="zoom(1)">Z+</button>
+        <button class="key" style="color:cyan" onclick="zoom(-1)">Z-</button>
     </div>
 
     <script>
-        // --- SISTEMA E STATO ---
-        const outputDiv = document.getElementById('output');
-        const input = document.getElementById('cmd-input');
-        const promptLabel = document.getElementById('prompt-label');
-        const root = document.documentElement;
+        // --- CONFIGURAZIONE ---
+        const output = document.getElementById('output');
+        const input = document.getElementById('cmd');
+        const promptDiv = document.getElementById('prompt');
+        const terminal = document.getElementById('terminal');
 
-        // File System Virtuale
-        let currentDir = "~"; 
+        // --- SISTEMA FILE VIRTUALE (VFS) ---
+        // Simulo una struttura di cartelle Linux
         let fileSystem = {
-            "~": ["downloads", "storage", "test_file.txt"],
-            "~/downloads": [],
-            "~/storage": []
+            '~': {
+                type: 'dir',
+                content: {
+                    'downloads': { type: 'dir', content: {} },
+                    'storage': { type: 'dir', content: {} },
+                    'README.md': { type: 'file', content: 'Welcome to Elking Termux!' }
+                }
+            }
         };
         
-        // Stato interattivo (per y/n questions)
-        let interactiveState = null; 
+        // Stato del sistema
+        let currentPath = ['~']; // Percorso attuale
+        let commandHistory = [];
+        let historyIndex = -1;
+        let installedPackages = ['coreutils', 'bash', 'grep', 'tar']; // Pacchetti base
+        let interactiveMode = null; // Per domande y/n
+        let fontSize = 13;
 
-        // Zoom
-        let currentZoom = 13;
-
-        // --- GESTIONE INPUT ---
-        input.addEventListener('keydown', function(e) {
+        // --- CORE PROCESSOR ---
+        input.addEventListener('keydown', async (e) => {
             if (e.key === 'Enter') {
-                const rawInput = input.value;
-                const cleanInput = rawInput.trim();
-                
-                // Stampa la riga di comando appena eseguita
-                printToScreen(`${promptLabel.innerText} ${rawInput}`);
-                
-                // Pulisci input
+                const rawCmd = input.value;
+                println(`${promptDiv.innerText} ${rawCmd}`);
+                commandHistory.push(rawCmd);
+                historyIndex = commandHistory.length;
                 input.value = '';
 
-                // Se siamo in modalità interattiva (es. termux-setup-storage)
-                if (interactiveState) {
-                    handleInteractive(cleanInput);
-                } else {
-                    // Modalità normale
-                    if (cleanInput !== "") executeCommand(cleanInput);
+                if (interactiveMode) {
+                    handleInteractive(rawCmd);
+                } else if (rawCmd.trim() !== '') {
+                    await exec(rawCmd.trim());
                 }
-                
                 scrollToBottom();
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if(historyIndex > 0) {
+                    historyIndex--;
+                    input.value = commandHistory[historyIndex];
+                }
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if(historyIndex < commandHistory.length - 1) {
+                    historyIndex++;
+                    input.value = commandHistory[historyIndex];
+                } else {
+                    input.value = '';
+                }
             }
         });
 
-        // --- MOTORE COMANDI ---
-        async function executeCommand(cmdStr) {
-            const args = cmdStr.split(/\s+/); // Divide per spazi
+        // --- ESECUTORE COMANDI (SHELL SIMULATA) ---
+        async function exec(cmdString) {
+            const args = cmdString.split(/\s+/);
             const cmd = args[0];
+            const param = args[1];
+
+            // Ottieni la cartella corrente dal VFS
+            let currentDirObj = getDirFromPath(currentPath);
 
             switch (cmd) {
-                case 'pkg':
-                    if (!args[1]) {
-                        // Replica esatta del testo richiesto
-                        printToScreen(`Usage: pkg command [arguments]
-
-A tool for managing apt packages.
-
-Commands:
-
-  autoclean            - Remove all outdated packages from apt cache.
-
-  clean                - Remove all packages from apt cache.
-                         Using 16M now.
-
-  files <packages>     - Show all files installed by packages.
-
-  install <packages>   - Install specified packages.
-
-  list-all             - List all packages available in repositories.
-
-  list-installed       - List installed packages.
-
-  reinstall <packages> - Reinstall specified installed packages at the
-                         latest version.
-
-  search <query>       - Search package by query, for example by name or
-                         description part.
-
-  show <packages>      - Show basic metadata, such as dependencies.
-
-  uninstall <packages> - Uninstall specified packages. Configuration files
-                         will be left intact.
-
-  upgrade              - Upgrade all installed packages to the latest
-                         version.
-
-  update               - Update apt databases from configured
-                         repositories.`);
-                    } else if (args[1] === 'install') {
-                        await fakeInstall(args[2]);
-                    } else {
-                         // Gestione generica
-                         printToScreen("Checking for updates...");
-                         await delay(500);
-                         printToScreen("All packages up to date.");
-                    }
-                    break;
-
-                case 'apt':
-                    if (!args[1]) {
-                        printToScreen(`apt 3.1.12 (aarch64)
-Usage: apt [options] command
-
-apt is a commandline package manager and provides commands for
-searching and managing as well as querying information about packages.
-It provides the same functionality as the specialized APT tools,
-like apt-get and apt-cache, but enables options more suitable for
-interactive use by default.
-
-Most used commands:
-  list - list packages based on package names
-  search - search in package descriptions
-  show - show package details
-  install - install packages
-  reinstall - reinstall packages
-  remove - remove packages
-  autoremove - automatically remove all unused packages
-  update - update list of available packages
-  upgrade - upgrade the system by installing/upgrading packages
-  full-upgrade - upgrade the system by removing/installing/upgrading packages
-  history-list - show list of history
-  history-info - show info on specific transactions
-  history-redo - redo transactions
-  history-undo - undo transactions
-  history-rollback - rollback transactions
-  edit-sources - edit the source information file
-  modernize-sources - modernize .list files to .sources files
-  satisfy - satisfy dependency strings
-  why - produce a reason trace for the current state of the package
-  why-not - produce a reason trace for the current state of the package
-
-See apt(8) for more information about the available commands.
-Configuration options and syntax is detailed in apt.conf(5).
-Information about how to configure sources can be found in sources.list(5).
-Package and version choices can be expressed via apt_preferences(5).
-Security details are available in apt-secure(8).
-                                        This APT has Super Cow Powers.`);
-                    } else if (args[1] === 'update') {
-                        printToScreen("Get:1 https://termux.net stable InRelease [14.0 kB]");
-                        await delay(300);
-                        printToScreen("Get:2 https://termux.net stable/main aarch64 Packages [102 kB]");
-                        await delay(300);
-                        printToScreen("Fetched 116 kB in 1s (100 kB/s)\nReading package lists... Done\nBuilding dependency tree... Done");
-                    }
-                    break;
-
-                case 'update':
-                case 'storage':
-                    // Replica errore Bash
-                    printToScreen(`bash: ${cmd}: command not found`);
+                case 'help':
+                    println("Built-in commands: pkg, apt, ls, cd, pwd, mkdir, rm, touch, cat, echo, clear, termux-setup-storage, history, exit");
                     break;
 
                 case 'clear':
-                    outputDiv.innerHTML = '';
+                    output.innerHTML = '';
                     break;
 
                 case 'ls':
-                    const files = fileSystem[currentDir] || [];
-                    // Le cartelle in blu, file in bianco
-                    let html = files.map(f => f.includes('.') ? f : `<span class="blue">${f}</span>`).join('  ');
-                    printToScreen(html);
+                    let content = Object.keys(currentDirObj.content);
+                    if (content.length === 0) return;
+                    // Colora cartelle in blu
+                    let htmlList = content.map(name => {
+                        return currentDirObj.content[name].type === 'dir' ? `<span class="dir">${name}</span>` : name;
+                    }).join('  ');
+                    println(htmlList);
                     break;
-                
+
                 case 'pwd':
-                    // Simula percorso reale termux
-                    let realPath = currentDir.replace('~', '/data/data/com.termux/files/home');
-                    printToScreen(realPath);
+                    // Simula path reale Android/Termux
+                    let fakePath = currentPath.join('/').replace('~', '/data/data/com.termux/files/home');
+                    println(fakePath);
                     break;
 
                 case 'cd':
-                    if (!args[1] || args[1] === '~') {
-                        currentDir = "~";
-                    } else if (args[1] === '..') {
-                         // Semplice logica torna indietro (non perfetta ma funzionale per demo)
-                         if(currentDir !== "~") currentDir = "~";
+                    if (!param || param === '~') {
+                        currentPath = ['~'];
+                    } else if (param === '..') {
+                        if (currentPath.length > 1) currentPath.pop();
                     } else {
-                        // Entra in cartella (simulato)
-                        if (fileSystem[currentDir + "/" + args[1]] || fileSystem["~/" + args[1]]) {
-                            if(currentDir === "~") currentDir += "/" + args[1];
+                        if (currentDirObj.content[param] && currentDirObj.content[param].type === 'dir') {
+                            currentPath.push(param);
                         } else {
-                            printToScreen(`bash: cd: ${args[1]}: No such file or directory`);
+                            println(`bash: cd: ${param}: No such file or directory`);
                         }
                     }
                     updatePrompt();
                     break;
 
-                case 'termux-setup-storage':
-                    printToScreen(`
-It appears that directory '~/storage' already exists.
-This script is going to rebuild its structure from
-scratch, wiping all dangling files. The actual storage
-content IS NOT going to be deleted.
+                case 'mkdir':
+                    if (!param) println("mkdir: missing operand");
+                    else {
+                        if(currentDirObj.content[param]) println(`mkdir: cannot create directory '${param}': File exists`);
+                        else currentDirObj.content[param] = { type: 'dir', content: {} };
+                    }
+                    break;
 
-Do you want to continue? (y/n)`);
-                    interactiveState = 'storage_setup';
+                case 'touch':
+                    if (!param) println("touch: missing file operand");
+                    else currentDirObj.content[param] = { type: 'file', content: '' };
+                    break;
+
+                case 'rm':
+                    if (!param) println("rm: missing operand");
+                    else {
+                        if (currentDirObj.content[param]) delete currentDirObj.content[param];
+                        else println(`rm: cannot remove '${param}': No such file or directory`);
+                    }
+                    break;
+
+                case 'echo':
+                    println(args.slice(1).join(' '));
+                    break;
+
+                case 'pkg':
+                case 'apt':
+                    await packageManager(args);
+                    break;
+
+                case 'termux-setup-storage':
+                    println("It appears that directory '~/storage' already exists.");
+                    println("Do you want to continue? (y/n)");
+                    interactiveMode = 'storage';
+                    break;
+
+                case 'python':
+                case 'python3':
+                    if(installedPackages.includes('python')) {
+                        println("Python 3.11.4 (main, Jun 7 2023) [GCC]");
+                        println(">>> quit()"); // Placeholder
+                    } else {
+                        printNotInstalled('python');
+                    }
                     break;
                 
-                case 'exit':
-                    printToScreen("Process completed (signal 9). Press Reload to restart.");
-                    input.disabled = true;
+                case 'matrix':
+                case 'cmatrix':
+                    if(installedPackages.includes('cmatrix') || installedPackages.includes('matrix')) {
+                         startMatrix();
+                    } else {
+                        printNotInstalled('cmatrix');
+                    }
+                    break;
+                
+                case 'whoami':
+                    println("u0_a257");
+                    break;
+                
+                case 'date':
+                    println(new Date().toString());
+                    break;
+
+                case 'chbg':
+                    // Comando speciale Elking
+                    if(localStorage.getItem('elking_perm') === 'true') {
+                        document.getElementById('bg-upload').click();
+                    } else {
+                        println("bash: chbg: Permission denied (run termux-setup-storage)");
+                    }
                     break;
 
                 default:
-                    printToScreen(`bash: ${cmd}: command not found`);
+                    println(`bash: ${cmd}: command not found`);
+            }
+        }
+
+        // --- GESTORE PACCHETTI SIMULATO (PKG/APT) ---
+        async function packageManager(args) {
+            const action = args[1];
+            const pkgName = args[2];
+
+            if (!action) {
+                // Stampa l'help reale di Termux
+                println(`Usage: pkg command [arguments]
+Commands:
+  install <packages>   - Install specified packages.
+  list-all             - List all packages.
+  search <query>       - Search package.
+  show <packages>      - Show metadata.
+  uninstall <packages> - Uninstall packages.
+  upgrade              - Upgrade all packages.
+  update               - Update apt databases.`);
+                return;
+            }
+
+            if (action === 'install') {
+                if (!pkgName) { println("E: Missing package name."); return; }
+                if (installedPackages.includes(pkgName)) {
+                    println(`${pkgName} is already the newest version.`);
+                    return;
+                }
+                
+                // Simulazione Download Reale
+                input.disabled = true;
+                println(`Checking dependencies for ${pkgName}...`);
+                await delay(400);
+                println(`Downloading ${pkgName} (stable)...`);
+                
+                // Barra progresso ASCII
+                let pLine = document.createElement('div');
+                pLine.className = 'line';
+                output.appendChild(pLine);
+                for(let i=0; i<=10; i++) {
+                    let hash = "#".repeat(i);
+                    let dots = ".".repeat(10-i);
+                    pLine.innerText = `Get:1 ${pkgName} [${hash}${dots}] ${(i*10)}%`;
+                    await delay(150);
+                }
+                
+                println("Unpacking objects...");
+                await delay(300);
+                println("Setting up configuration...");
+                
+                installedPackages.push(pkgName);
+                println(`\nPackage <span class="exec">${pkgName}</span> installed.`);
+                input.disabled = false;
+                input.focus();
+
+            } else if (action === 'update' || action === 'upgrade') {
+                println("Get:1 https://termux.net stable InRelease [14.0 kB]");
+                await delay(500);
+                println("Reading package lists... Done");
+                println("Building dependency tree... Done");
+                println("All packages are up to date.");
+            } else {
+                 println(`E: Invalid operation ${action}`);
             }
         }
 
         // --- GESTIONE INTERATTIVA (Y/N) ---
         function handleInteractive(ans) {
-            const answer = ans.toLowerCase();
-            
-            if (interactiveState === 'storage_setup') {
-                if (answer === 'y') {
-                    // Simula attesa
+            if (interactiveMode === 'storage') {
+                if (ans.toLowerCase() === 'y') {
                     setTimeout(() => {
-                        // Chiede permessi veri al browser
-                        let permission = confirm("Allow Termux Elking to access photos, media and files on your device?");
-                        if (permission) {
-                            // Se accetta, sblocca il cambio sfondo
-                            let bgInput = document.createElement('input');
-                            bgInput.type = 'file';
-                            bgInput.accept = 'image/*';
-                            bgInput.onchange = (e) => {
-                                const file = e.target.files[0];
-                                const reader = new FileReader();
-                                reader.onload = (ev) => document.body.style.backgroundImage = `url(${ev.target.result})`;
-                                reader.readAsDataURL(file);
-                            };
-                            bgInput.click(); // Apre galleria
-                            printToScreen("Storage permission granted.");
+                        let ok = confirm("Allow Termux to access photos and media?");
+                        if(ok) {
+                            localStorage.setItem('elking_perm', 'true');
+                            println("Storage permission granted.");
                         } else {
-                            printToScreen("Permission denied.");
+                            println("Permission denied.");
                         }
-                        interactiveState = null;
-                        promptLabel.innerText = getPrompt();
-                    }, 500);
+                        interactiveMode = null;
+                        updatePrompt();
+                    }, 200);
                 } else {
-                    printToScreen("Aborting configuration and leaving directory '~/storage' intact.");
-                    interactiveState = null;
-                    promptLabel.innerText = getPrompt();
+                    println("Aborting.");
+                    interactiveMode = null;
                 }
             }
         }
 
-        // --- UTILITIES ---
-        function getPrompt() {
-            // Mantiene la cartella corrente nel prompt
-            let displayDir = currentDir === "~" ? "~" : currentDir.split('/').pop();
-            return `H4CK3R[${displayDir}]:#`;
+        // --- UTILS ---
+        function getDirFromPath(pathArray) {
+            let current = fileSystem['~'];
+            for (let i = 1; i < pathArray.length; i++) {
+                current = current.content[pathArray[i]];
+            }
+            return current;
         }
 
         function updatePrompt() {
-            promptLabel.innerText = getPrompt();
+            let pathStr = currentPath.length === 1 ? '~' : currentPath[currentPath.length-1];
+            promptDiv.innerText = `${pathStr} $`;
         }
 
-        function printToScreen(text) {
-            const div = document.createElement('div');
-            div.className = 'output-line';
-            div.innerHTML = text; // Usa innerHTML per i colori
-            outputDiv.appendChild(div);
+        function println(html) {
+            const d = document.createElement('div');
+            d.className = 'line';
+            d.innerHTML = html;
+            output.appendChild(d);
         }
 
-        function focusInput() { input.focus(); }
-        
+        function printNotInstalled(cmd) {
+            println(`The program '${cmd}' is not installed. Install it by executing:`);
+            println(` pkg install ${cmd}`);
+        }
+
         function scrollToBottom() {
-            document.getElementById('terminal-overlay').scrollTop = document.getElementById('terminal-overlay').scrollHeight;
+            terminal.scrollTop = terminal.scrollHeight;
         }
 
-        function insert(char) {
-            if(char.length > 1 && char !== 'ESC') return; // Gestione tasti non char
-            input.value += char;
-            input.focus();
-        }
-
+        function press(k) { input.value += k; input.focus(); }
+        
         function zoom(dir) {
-            currentZoom += dir;
-            root.style.setProperty('--font-size', currentZoom + 'px');
+            fontSize += dir;
+            terminal.style.fontSize = fontSize + 'px';
         }
 
-        function delay(ms) { return new Promise(res => setTimeout(res, ms)); }
+        function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-        // Simulazione Installazione
-        async function fakeInstall(pkg) {
-            if(!pkg) { printToScreen("E: Missign package name."); return; }
-            printToScreen(`Checking dependencies for ${pkg}...`);
-            await delay(400);
-            printToScreen(`Downloading ${pkg} (100%)...`);
+        // Gestione cambio sfondo
+        document.getElementById('bg-upload').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (ev) => document.body.style.backgroundImage = `url(${ev.target.result})`;
+            reader.readAsDataURL(file);
+        });
+
+        // Matrix Effect
+        function startMatrix() {
+            output.innerHTML = '';
+            const canvas = document.createElement('canvas');
+            canvas.style.position = 'absolute'; canvas.style.top=0; canvas.style.left=0;
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            canvas.style.opacity = 0.8;
+            document.body.appendChild(canvas);
+            const ctx = canvas.getContext('2d');
+            const cols = Math.floor(canvas.width / 20);
+            const ypos = Array(cols).fill(0);
             
-            let bar = "";
-            let pDiv = document.createElement('div');
-            pDiv.className = 'output-line';
-            outputDiv.appendChild(pDiv);
-            
-            for(let i=0; i<=20; i++) {
-                pDiv.innerText = `Setting up ${pkg} [${"#".repeat(i)}${".".repeat(20-i)}]`;
-                await delay(50 + Math.random()*100);
-            }
-            printToScreen("");
-            printToScreen(`Package ${pkg} installed.`);
+            const interval = setInterval(() => {
+                ctx.fillStyle = '#0001'; ctx.fillRect(0,0,canvas.width,canvas.height);
+                ctx.fillStyle = '#0f0'; ctx.font = '15pt monospace';
+                ypos.forEach((y, ind) => {
+                    const text = String.fromCharCode(Math.random() * 128);
+                    const x = ind * 20;
+                    ctx.fillText(text, x, y);
+                    if(y > 100 + Math.random()*10000) ypos[ind] = 0;
+                    else ypos[ind] = y + 20;
+                });
+            }, 50);
+
+            input.disabled = true;
+            document.body.addEventListener('click', () => {
+                clearInterval(interval);
+                canvas.remove();
+                input.disabled = false;
+                output.innerHTML = '';
+                input.focus();
+            }, {once:true});
         }
-
     </script>
 </body>
-</html>
-
+    </html>
+    
